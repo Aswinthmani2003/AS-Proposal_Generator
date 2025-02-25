@@ -14,15 +14,9 @@ PROPOSAL_CONFIG = {
     "AI Automations Proposal": {
         "template": "AI Automations Proposal.docx",
         "pricing_fields": [
-            ("Landing Page Website", "L-Price"),
-            ("Admin Panel", "A-Price"),
+            ("AI Calling + CRM Integration", "AI-Price"),
             ("CRM Automations", "C-Price"),
-            ("ManyChat & Make Automation", "M-Price"),
-            ("Social Media Automation", "S-Price"), 
-            ("AI Calling", "AI-Price"),
-            ("Total Amount", "T-Price"),
-            ("Annual Maintenance", "AM-Price"),
-            ("Additional Features & Enhancements", "AF-Price")
+            ("ManyChat & Make Automation", "MM-Price")
         ],
         "team_type": "general",
         "special_fields": []
@@ -42,7 +36,7 @@ PROPOSAL_CONFIG = {
             ("PDF Generation Automations", "pdf gen pr"),
             ("Social Media Content", "ai mdl price"),
             ("Custom AI Models", "cstm ai price"),
-            ("Additional Features & Enhancements", "AF-Price")
+            ("Extra Research", "Additional")
         ],
         "team_type": None,
         "special_fields": [
@@ -69,7 +63,11 @@ PROPOSAL_CONFIG = {
             ("validity_date", "{")
         ]
     },
+<<<<<<< HEAD
     "AI Automation Proposal without LPW": {
+=======
+    "AI Automations Proposal Without LPW": {
+>>>>>>> af1278b (first commit)
         "template": "Landing Page Website Proposal.docx",
         "pricing_fields": [
             ("CRM Automations", "C-Price"),
@@ -235,46 +233,45 @@ def generate_document():
     cols = st.columns(2)
     for idx, (label, key) in enumerate(config["pricing_fields"]):
         with cols[idx % 2]:
-            if key == "GST":
-                # Handle GST as percentage input
-                value = st.number_input(
-                    f"{label} (%)",
-                    min_value=0.0,
-                    value=0.0,
-                    step=0.1,
-                    format="%.1f",
-                    key=f"price_{key}"
-                )
-                numerical_values[key] = value
-                pricing_data[f"<<{key}>>"] = f"{value}%"
-            else:
-                value = st.number_input(
-                    f"{label} ({currency})",
-                    min_value=0,
-                    value=0,
-                    step=100,
-                    format="%d",
-                    key=f"price_{key}"
-                )
-                numerical_values[key] = value
-                pricing_data[f"<<{key}>>"] = f"{currency_symbol}{value}"
+            value = st.number_input(
+                f"{label} ({currency})",
+                min_value=0,
+                value=0,
+                step=100,
+                format="%d",
+                key=f"price_{key}"
+            )
+            numerical_values[key] = value
+            pricing_data[f"<<{key}>>"] = f"{currency_symbol}{value}"
 
-    # Calculate Total and Final Amount for Marketing Proposal
-    if selected_proposal == "Marketing Proposal":
-        total = sum([
-            numerical_values.get("Market", 0),
-            numerical_values.get("Social", 0),
-            numerical_values.get("Creative", 0),
-            numerical_values.get("Ads", 0),
-            numerical_values.get("SEO", 0),
-            numerical_values.get("Organic", 0)
+    # Calculate AI Automations Proposal totals
+    if selected_proposal == "AI Automations Proposal":
+        # Calculate sum of services
+        services_total = sum([
+            numerical_values.get("AI-Price", 0),
+            numerical_values.get("C-Price", 0),
+            numerical_values.get("MM-Price", 0)
         ])
-        gst_percentage = numerical_values.get("GST", 0)
-        gst_amount = total * (gst_percentage / 100)
-        final_amt = total + gst_amount
 
-        pricing_data["<<Total>>"] = f"{currency_symbol}{total}"
-        pricing_data["<<Final Amt>>"] = f"{currency_symbol}{final_amt}"
+        # Annual Maintenance (10% of services total)
+        am_price = services_total * 0.10
+        pricing_data["<<AM-Price>>"] = f"{currency_symbol}{int(am_price)}"
+
+        # Calculate total with GST for INR
+        if currency == "INR":
+            pre_gst_total = services_total + am_price
+            gst = pre_gst_total * 0.18  # 18% GST
+            total = pre_gst_total + gst
+            pricing_data["<<GST>>"] = f"{currency_symbol}{int(gst)}"  # Add GST placeholder
+        else:
+            total = services_total + am_price
+            pricing_data["<<GST>>"] = f"{currency_symbol}0"  # No GST for USD
+
+        pricing_data["<<T-Price>>"] = f"{currency_symbol}{int(total)}"
+
+        # Additional Features (fixed based on currency)
+        af_price = 25000 if currency == "INR" else 250
+        pricing_data["<<AF-Price>>"] = f"{currency_symbol}{af_price}"
 
     # Team Composition
     team_data = {}
