@@ -63,11 +63,7 @@ PROPOSAL_CONFIG = {
             ("validity_date", "{")
         ]
     },
-<<<<<<< HEAD
-    "AI Automation Proposal without LPW": {
-=======
     "AI Automations Proposal Without LPW": {
->>>>>>> af1278b (first commit)
         "template": "Landing Page Website Proposal.docx",
         "pricing_fields": [
             ("CRM Automations", "C-Price"),
