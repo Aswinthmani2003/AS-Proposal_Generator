@@ -69,7 +69,7 @@ PROPOSAL_CONFIG = {
             ("validity_date", "{")
         ]
     },
-    "Landing Page Website Proposal": {
+    "AI Automation Proposal without LPW": {
         "template": "Landing Page Website Proposal.docx",
         "pricing_fields": [
             ("CRM Automations", "C-Price"),
