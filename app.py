@@ -16,63 +16,10 @@ PROPOSAL_CONFIG = {
         "pricing_fields": [
             ("AI Calling + CRM Integration", "AI-Price"),
             ("CRM Automations", "C-Price"),
-            ("ManyChat & Make Automation", "MM-Price")
-        ],
-        "team_type": "general",
-        "special_fields": []
-    },
-    "Business Automations Proposal": {
-        "template": "Business Automations Proposal.docx",
-        "pricing_fields": [
-            ("Week 1 Work Description", "Description"),
-            ("Week 1 Price", "week1 price"),
-            ("AI Automations (6 scenarios)", "ai auto price"),
-            ("WhatsApp Automation + Setup", "whts price"),
-            ("CRM Setup", "crm price"),
-            ("Email Marketing Setup", "email price"),
-            ("Make/Zapier Automation", "make price"),
-            ("Firefly Meeting Automation", "firefly price"),
-            ("AI Chatbot", "chatbot price"),
-            ("PDF Generation Automations", "pdf gen pr"),
-            ("Social Media Content", "ai mdl price"),
-            ("Custom AI Models", "cstm ai price"),
-            ("Extra Research", "Additional")
-        ],
-        "team_type": None,
-        "special_fields": [
-            ("mutually_agreed_points", "{"),
-            ("Designation", "<<"),
-            ("validity_date", "{")
-        ]
-    },
-    "Marketing Proposal": {
-        "template": "Marketing Proposal.docx",
-        "pricing_fields": [
-            ("Marketing Strategy", "Market"),
-            ("Social Media & Ad Account", "Social"),
-            ("Creative Posts (10/month)", "Creative"),
-            ("Paid Ads (Meta+Google)", "Ads"),
-            ("SEO Services", "SEO"),
-            ("Organic Marketing", "Organic"),
-            ("GST Percentage", "GST"),
-            ("Instalment 1 Amount", "Inst1"),
-            ("Instalment 2 Amount", "Inst2")
-        ],
-        "team_type": "marketing",
-        "special_fields": [
-            ("validity_date", "{")
-        ]
-    },
-    "AI Automations Proposal Without LPW": {
-        "template": "Landing Page Website Proposal.docx",
-        "pricing_fields": [
-            ("CRM Automations", "C-Price"),
-            ("ManyChat & Make Automation", "M-Price"),
-            ("Social Media Automation", "S-Price"),
-            ("AI Calling", "AI-Price"),
-            ("Total Amount", "T-Price"),
-            ("Annual Maintenance", "AM-Price"),
-            ("Additional Features & Enhancements", "AF-Price")
+            ("ManyChat & Make Automation", "MM-Price"),
+            ("AI Content Creation", "AIC-Price"),
+            ("Email Automation", "E-Price"),
+            ("AI Calling (Basic)", "AIB-Price")
         ],
         "team_type": "general",
         "special_fields": []
@@ -181,7 +128,32 @@ def get_marketing_team_details():
             )
             team_details[f"<<{placeholder}>>"] = str(count)
 
-    return team_details
+def calculate_am_and_total(services_sum):
+    """Calculate Annual Maintenance (10% of Total) and Total Amount"""
+    total = services_sum / 0.9  # Total = Services / 0.9 (since AM = 10% of Total)
+    am = total * 0.10
+    return int(am), int(total)
+
+def remove_empty_rows(table):
+    """Remove rows from the table where the second cell is empty or has no value."""
+    rows_to_remove = []
+    for row in table.rows:
+        if len(row.cells) > 1 and row.cells[1].text.strip() == "":
+            rows_to_remove.append(row)
+    
+    # Remove rows in reverse order to avoid index issues
+    for row in reversed(rows_to_remove):
+        table._tbl.remove(row._element)
+
+def validate_phone_number(country, phone_number):
+    """Validate phone number based on country"""
+    if country.lower() == "india":
+        if not phone_number.startswith("+91"):
+            return False
+    else:
+        if not phone_number.startswith("+1"):
+            return False
+    return True
 
 def generate_document():
     st.title("Proposal Generator")
@@ -197,8 +169,13 @@ def generate_document():
         client_name = st.text_input("Client Name:")
         client_email = st.text_input("Client Email:")
     with col2:
-        client_number = st.text_input("Client Number:")
         country = st.text_input("Country:")
+        client_number = st.text_input("Client Number:")
+
+        # Validate phone number based on country
+        if client_number and country:
+            if not validate_phone_number(country, client_number):
+                st.error(f"Phone number for {country} should start with {'+91' if country.lower() == 'india' else '+1'}")
 
     date_field = st.date_input("Date:", datetime.today())
     
@@ -227,6 +204,8 @@ def generate_document():
     pricing_data = {}
     numerical_values = {}  # To store raw numerical values for calculations
     cols = st.columns(2)
+
+    # Collect base services input
     for idx, (label, key) in enumerate(config["pricing_fields"]):
         with cols[idx % 2]:
             value = st.number_input(
@@ -238,35 +217,31 @@ def generate_document():
                 key=f"price_{key}"
             )
             numerical_values[key] = value
-            pricing_data[f"<<{key}>>"] = f"{currency_symbol}{value}"
+            # Only add to pricing_data if the value is greater than 0
+            if value > 0:
+                pricing_data[f"<<{key}>>"] = f"{currency_symbol}{value}"
+            else:
+                pricing_data[f"<<{key}>>"] = ""  # Empty value for fields with zero values
 
-    # Calculate AI Automations Proposal totals
+    # Calculate Annual Maintenance and Total Amount
     if selected_proposal == "AI Automations Proposal":
-        # Calculate sum of services
-        services_total = sum([
+        # Calculate sum of services (only include fields with values > 0)
+        services_sum = sum([
             numerical_values.get("AI-Price", 0),
             numerical_values.get("C-Price", 0),
-            numerical_values.get("MM-Price", 0)
+            numerical_values.get("MM-Price", 0),
+            numerical_values.get("AIC-Price", 0),
+            numerical_values.get("E-Price", 0),
+            numerical_values.get("AIB-Price", 0)
         ])
 
-        # Annual Maintenance (10% of services total)
-        am_price = services_total * 0.10
-        pricing_data["<<AM-Price>>"] = f"{currency_symbol}{int(am_price)}"
+        # Annual Maintenance (10% of Total Amount)
+        am_price, total = calculate_am_and_total(services_sum)
+        pricing_data["<<AM-Price>>"] = f"{currency_symbol}{am_price}"
+        pricing_data["<<T-Price>>"] = f"{currency_symbol}{total}"
 
-        # Calculate total with GST for INR
-        if currency == "INR":
-            pre_gst_total = services_total + am_price
-            gst = pre_gst_total * 0.18  # 18% GST
-            total = pre_gst_total + gst
-            pricing_data["<<GST>>"] = f"{currency_symbol}{int(gst)}"  # Add GST placeholder
-        else:
-            total = services_total + am_price
-            pricing_data["<<GST>>"] = f"{currency_symbol}0"  # No GST for USD
-
-        pricing_data["<<T-Price>>"] = f"{currency_symbol}{int(total)}"
-
-        # Additional Features (fixed based on currency)
-        af_price = 25000 if currency == "INR" else 250
+        # Additional Features & Enhancements (fixed based on currency)
+        af_price = 250 if currency == "USD" else 25000
         pricing_data["<<AF-Price>>"] = f"{currency_symbol}{af_price}"
 
     # Team Composition
@@ -289,21 +264,28 @@ def generate_document():
     placeholders.update(special_data)
 
     if st.button("Generate Proposal"):
-        formatted_date = date_field.strftime("%d %b %Y")
-        unique_id = str(uuid.uuid4())[:8]
-        doc_filename = f"{selected_proposal}_{client_name}_{formatted_date}_{unique_id}.docx"
+        if client_number and country and not validate_phone_number(country, client_number):
+            st.error(f"Invalid phone number format for {country}. Please ensure it starts with {'+91' if country.lower() == 'india' else '+1'}.")
+        else:
+            formatted_date = date_field.strftime("%d %b %Y")
+            unique_id = str(uuid.uuid4())[:8]
+            doc_filename = f"{selected_proposal}_{client_name}_{formatted_date}_{unique_id}.docx"
 
-        with tempfile.TemporaryDirectory() as temp_dir:
-            doc = Document(template_path)
-            doc = replace_and_format(doc, placeholders)
+            with tempfile.TemporaryDirectory() as temp_dir:
+                doc = Document(template_path)
+                doc = replace_and_format(doc, placeholders)
 
-            doc_path = os.path.join(temp_dir, doc_filename)
-            doc.save(doc_path)
+                # Remove empty rows from the pricing table
+                for table in doc.tables:
+                    remove_empty_rows(table)
 
-            with open(doc_path, "rb") as f:
-                st.download_button("Download Proposal", f, doc_filename)
+                doc_path = os.path.join(temp_dir, doc_filename)
+                doc.save(doc_path)
 
-            st.success("Proposal generated successfully!")
+                with open(doc_path, "rb") as f:
+                    st.download_button("Download Proposal", f, doc_filename)
+
+                st.success("Proposal generated successfully!")
 
 if __name__ == "__main__":
     generate_document()
