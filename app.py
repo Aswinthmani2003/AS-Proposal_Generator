@@ -397,6 +397,23 @@ def generate_document():
     elif config["team_type"] == "general":
         team_data = get_general_team_details()
 
+    # Add Additional Tools Section
+    st.subheader("Add Additional Tools")
+    additional_tool_1 = st.text_input("Tool 1:")
+    additional_tool_2 = st.text_input("Tool 2:")
+
+    additional_tools_data = {}
+    if additional_tool_1:
+        additional_tools_data["<<T1>>"] = additional_tool_1
+    else:
+        additional_tools_data["<<T1>>"] = ""  # Make placeholder invisible
+
+    if additional_tool_2:
+        additional_tools_data["<<T2>>"] = additional_tool_2
+    else:
+        additional_tools_data["<<T2>>"] = ""  # Make placeholder invisible
+   
+
     # Combine all placeholders
     placeholders = {
         "<<Client Name>>": client_name,
@@ -408,6 +425,7 @@ def generate_document():
     placeholders.update(pricing_data)
     placeholders.update(team_data)
     placeholders.update(special_data)
+    placeholders.update(additional_tools_data)
 
     if st.button("Generate Proposal"):
         if client_number and country and not validate_phone_number(country, client_number):
