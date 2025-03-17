@@ -2,13 +2,10 @@ import streamlit as st
 from docx import Document
 from datetime import datetime
 import os
-from docx.enum.text import WD_ALIGN_PARAGRAPH
-from docx.shared import Pt, RGBColor
 from docx.oxml.ns import qn
 from docx.enum.table import WD_CELL_VERTICAL_ALIGNMENT
 import uuid
 import tempfile
-import locale
 
 # Proposal configurations
 PROPOSAL_CONFIG = {
@@ -54,7 +51,7 @@ PROPOSAL_CONFIG = {
         "template": "AI Calling(Basic) & CRM Automation.docx",
         "pricing_fields": [
             ("AI Calling(Basic)", "AI-Price"),
-            ("CRM Automation", "CC-Price")  # Changed Here
+            ("CRM Automation", "CC-Price")
         ],
         "team_type": "general",
         "special_fields": [("VDate", "<<")]
@@ -246,7 +243,7 @@ def format_number_with_commas(number):
 
 def generate_document():
     st.title("Proposal Generator")
-    base_dir = os.path.join(os.getcwd(), "templates")
+    base_dir = os.getcwd()  # Changed from templates directory
 
     selected_proposal = st.selectbox("Select Proposal", list(PROPOSAL_CONFIG.keys()))
     config = PROPOSAL_CONFIG[selected_proposal]
@@ -312,14 +309,12 @@ def generate_document():
 
     # Calculate Total Amount
     if selected_proposal == "Make, Manychat & CRM Automation":
-        # Calculate sum of services
         services_sum = sum([
             numerical_values.get("MC-Price", 0),
             numerical_values.get("M-Price", 0),
             numerical_values.get("C-Price", 0)
         ])
     elif selected_proposal == "Make & Manychat Automation":
-        # Calculate sum of services
         services_sum = sum([
             numerical_values.get("MC-Price", 0),
             numerical_values.get("M-Price", 0)
@@ -338,7 +333,7 @@ def generate_document():
     elif selected_proposal == "AI Calling(Basic) & CRM Automation":
         services_sum = sum([
             numerical_values.get("AI-Price", 0),
-            numerical_values.get("CC-Price", 0) # Changed Here
+            numerical_values.get("CC-Price", 0)
         ])
     elif selected_proposal == "AI Calling, Make & Manychat Automation":
         services_sum = sum([
@@ -406,13 +401,12 @@ def generate_document():
     if additional_tool_1:
         additional_tools_data["<<T1>>"] = additional_tool_1
     else:
-        additional_tools_data["<<T1>>"] = ""  # Make placeholder invisible
+        additional_tools_data["<<T1>>"] = ""
 
     if additional_tool_2:
         additional_tools_data["<<T2>>"] = additional_tool_2
     else:
-        additional_tools_data["<<T2>>"] = ""  # Make placeholder invisible
-   
+        additional_tools_data["<<T2>>"] = ""
 
     # Combine all placeholders
     placeholders = {
@@ -436,7 +430,12 @@ def generate_document():
             doc_filename = f"{selected_proposal}_{client_name}_{formatted_date}_{unique_id}.docx"
 
             with tempfile.TemporaryDirectory() as temp_dir:
-                doc = Document(template_path)
+                try:
+                    doc = Document(template_path)
+                except FileNotFoundError:
+                    st.error(f"Template file not found: {template_path}")
+                    return
+
                 doc = replace_and_format(doc, placeholders)
 
                 # Remove empty rows from the pricing table
