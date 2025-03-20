@@ -28,16 +28,10 @@ Select a template or use AI-powered suggestions.
 Review and refine the generated proposal.
 Export the proposal as a PDF or Word document.
 
-📂 Project Structure
-AS-Proposal_Generator/
-│── data/               # Sample data and templates
-│── templates/          # Proposal templates
-│── src/                # Core script files
-│── main.py             # Entry point of the application
-│── requirements.txt     # Python dependencies
-│── README.md           # Project documentation
+
 
 📞 Contact
 If you have any questions or suggestions, feel free to reach out:
 📧 Email: your-aswinthmani10@gmail.com
+
 🔗 GitHub: https://github.com/Aswinthmani2003
