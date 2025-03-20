@@ -32,6 +32,7 @@ Export the proposal as a PDF or Word document.
 
 📞 Contact
 If you have any questions or suggestions, feel free to reach out:
+
 📧 Email: your-aswinthmani10@gmail.com
 
 🔗 GitHub: https://github.com/Aswinthmani2003
