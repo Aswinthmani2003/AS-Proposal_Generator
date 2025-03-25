@@ -113,6 +113,16 @@ PROPOSAL_CONFIG = {
         ],
         "team_type": "general",
         "special_fields": [("VDate", "<<")]
+    },
+    "AI Automations Proposal and LPW": {
+        "template": "AI Automations Proposal and LPW.docx",
+        "pricing_fields": [
+            ("AI Calling with CRM Connection", "AI-Price"),
+            ("Landing Page Website", "Land-Price"),
+            ("ManyChat & Make Automation", "M&MC-Price")
+        ],
+        "team_type": "general",
+        "special_fields": [("VDate", "<<")]
     }
 }
 
@@ -243,7 +253,7 @@ def format_number_with_commas(number):
 
 def generate_document():
     st.title("Proposal Generator")
-    base_dir = os.getcwd()  # Changed from templates directory
+    base_dir = os.getcwd()
 
     selected_proposal = st.selectbox("Select Proposal", list(PROPOSAL_CONFIG.keys()))
     config = PROPOSAL_CONFIG[selected_proposal]
@@ -369,6 +379,12 @@ def generate_document():
             numerical_values.get("C-Price", 0),
             numerical_values.get("ACC-Price", 0)
         ])
+    elif selected_proposal == "AI Automations Proposal and LPW":
+        services_sum = sum([
+        numerical_values.get("AI-Price", 0),
+        numerical_values.get("Land-Price", 0),
+        numerical_values.get("M&MC-Price", 0)
+    ])
 
     # Annual Maintenance (10% of Total Amount)
     am_price = int(services_sum * 0.10)
@@ -425,9 +441,12 @@ def generate_document():
         if client_number and country and not validate_phone_number(country, client_number):
             st.error(f"Invalid phone number format for {country} should start with {'+91' if country.lower() == 'india' else '+1'}.")
         else:
-            formatted_date = date_field.strftime("%d %b %Y")
-            unique_id = str(uuid.uuid4())[:8]
-            doc_filename = f"{selected_proposal}_{client_name}_{formatted_date}_{unique_id}.docx"
+            formatted_date = date_field.strftime("%d-%m-%Y")
+            if selected_proposal == "AI Automations Proposal and LPW":
+                doc_filename = f"AI Automations Proposal and LPW {client_name} {formatted_date}.docx"
+            else:
+                doc_filename = f"AI Automations Proposal {client_name} {formatted_date}.docx"
+
 
             with tempfile.TemporaryDirectory() as temp_dir:
                 try:
