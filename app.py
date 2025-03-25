@@ -443,9 +443,9 @@ def generate_document():
         else:
             formatted_date = date_field.strftime("%d-%m-%Y")
             if selected_proposal == "AI Automations Proposal and LPW":
-                doc_filename = f"AI Automations Proposal and LPW {client_name} {formatted_date}.docx"
+                doc_filename = f"AI Automations Proposal and LPW - {client_name} {formatted_date}.docx"
             else:
-                doc_filename = f"AI Automations Proposal {client_name} {formatted_date}.docx"
+                doc_filename = f"AI Automations Proposal - {client_name} {formatted_date}.docx"
 
 
             with tempfile.TemporaryDirectory() as temp_dir:
