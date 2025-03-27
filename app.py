@@ -123,6 +123,15 @@ PROPOSAL_CONFIG = {
         ],
         "team_type": "general",
         "special_fields": [("VDate", "<<")]
+    },
+    "AI Calling with CRM Connection & Make": {
+        "template": "AI Calling with  CRM Connection & Make.docx",
+        "pricing_fields": [
+            ("AI Calling with CRM Connection", "AI with CRM-Price"),
+            ("Make Automation", "M-Price")
+        ],
+        "team_type": "general",
+        "special_fields": [("VDate", "<<")]
     }
 }
 
@@ -385,6 +394,11 @@ def generate_document():
         numerical_values.get("Land-Price", 0),
         numerical_values.get("M&MC-Price", 0)
     ])
+    elif selected_proposal == "AI Calling with CRM Connection & Make":
+        services_sum = sum([
+        numerical_values.get("AI with CRM-Price", 0),
+        numerical_values.get("M-Price", 0)
+    ])    
 
     # Annual Maintenance (10% of Total Amount)
     am_price = int(services_sum * 0.10)
