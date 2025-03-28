@@ -132,7 +132,75 @@ PROPOSAL_CONFIG = {
         ],
         "team_type": "general",
         "special_fields": [("VDate", "<<")]
-    }
+    },
+    "AI Based Search Engine Website": {
+        "template": "AI Based Search Engine Website Technical Consultation proposal.docx",
+        "pricing_fields": [
+            ("Design", "Design-Price"),
+            ("Development", "Dev-Price"),
+            ("Testing & Deployment", "TD-Price"),
+            ("Annual Maintenance", "AM-Price")
+        ],
+        "team_type": "general",
+        "special_fields": [("VDate", "<<")]
+    },
+    "Community App": {
+        "template": "Community App Tech Proposal.docx",
+        "pricing_fields": [
+            ("Design", "Design-Price"),
+            ("AI/ML & Development", "AIML-Price"),
+            ("QA & Project Management", "QA-Price"),
+            ("Annual Maintenance", "AM-Price")
+        ],
+        "team_type": "general",
+        "special_fields": [("VDate", "<<")]
+    },
+    "Job Portal Website": {
+        "template": "Job portal website Tech Proposal.docx",
+        "pricing_fields": [
+            ("Design", "Design-Price"),
+            ("Development", "Dev-Price"),
+            ("Automations", "Automation-Price"),
+            ("Testing & Deployment", "TD-Price"),
+            ("Annual Maintenance", "AM-Price")
+        ],
+        "team_type": "general",
+        "special_fields": [("VDate", "<<")]
+    },
+    "Shopify Website": {
+        "template": "Shopify Website.docx",
+        "pricing_fields": [
+            ("Development", "Dev-Price"),
+            ("Design", "Design-Price"),
+            ("Testing and Live", "Testing-Price"),
+            ("Annual Maintenance", "AM-Price")
+        ],
+        "team_type": "general",
+        "special_fields": [("VDate", "<<")]
+    },
+    "Single Vendor Ecommerce Website": {
+        "template": "Single Vendor Ecommerce website.docx",
+        "pricing_fields": [
+            ("Development", "Dev-Price"),
+            ("Design", "Design-Price"),
+            ("Website Bot", "WB-Price"),
+            ("Testing and Deployment", "TD-Price"),
+            ("Annual Maintenance", "AM-Price")
+        ],
+        "team_type": "general",
+        "special_fields": [("VDate", "<<")]
+    },
+    "Web Based AI Fintech Proposal": {
+    "template": "Web based AI Fintech proposal.docx",
+    "pricing_fields": [
+        ("Development", "Dev-Price"),
+        ("Design", "Design-Price"),
+        ("AI/ML Models", "AIML-Price"),
+        ("Annual Maintenance", "AM-Price")
+    ],
+    "team_type": "general",
+    "special_fields": [("VDate", "<<")]
+}
 }
 
 def apply_formatting(new_run, original_run):
@@ -265,6 +333,24 @@ def generate_document():
     base_dir = os.getcwd()
 
     selected_proposal = st.selectbox("Select Proposal", list(PROPOSAL_CONFIG.keys()))
+    
+    
+    matrix_2x2_templates = [
+    "AI Based Search Engine Website",
+    "Community App",
+    "Job Portal Website",
+    "Shopify Website",
+    "Single Vendor Ecommerce Website",
+    "Web Based AI Fintech Proposal"
+]
+
+
+    is_matrix_2x2 = selected_proposal in matrix_2x2_templates
+
+    
+    
+    
+    
     config = PROPOSAL_CONFIG[selected_proposal]
     template_path = os.path.join(base_dir, config["template"])
 
@@ -305,12 +391,16 @@ def generate_document():
     numerical_values = {}  # To store raw numerical values for calculations
 
     # Determine number of columns based on selected proposal
-    num_pricing_fields = len(config["pricing_fields"])
-    cols = st.columns(num_pricing_fields)
+    if is_matrix_2x2:
+        cols = st.columns(2)
+    else:
+        num_pricing_fields = len(config["pricing_fields"])
+        cols = st.columns(num_pricing_fields)
+
 
     # Collect base services input
     for idx, (label, key) in enumerate(config["pricing_fields"]):
-        with cols[idx % num_pricing_fields]:
+        with cols[idx % len(cols)]:
             value = st.number_input(
                 f"{label} ({currency})",
                 min_value=0,
@@ -398,7 +488,53 @@ def generate_document():
         services_sum = sum([
         numerical_values.get("AI with CRM-Price", 0),
         numerical_values.get("M-Price", 0)
-    ])    
+    ])
+    elif selected_proposal == "AI Based Search Engine Website":
+        services_sum = sum([
+        numerical_values.get("Design-Price", 0),
+        numerical_values.get("Dev-Price", 0),
+        numerical_values.get("TD-Price", 0),
+        numerical_values.get("AM-Price", 0)
+    ])
+    elif selected_proposal == "Community App":
+        services_sum = sum([
+        numerical_values.get("Design-Price", 0),
+        numerical_values.get("AIML-Price", 0),
+        numerical_values.get("QA-Price", 0),
+        numerical_values.get("AM-Price", 0)
+    ])
+    elif selected_proposal == "Job Portal Website":
+        services_sum = sum([
+        numerical_values.get("Design-Price", 0),
+        numerical_values.get("Dev-Price", 0),
+        numerical_values.get("Automation-Price", 0),
+        numerical_values.get("TD-Price", 0),
+        numerical_values.get("AM-Price", 0)
+    ])
+    elif selected_proposal == "Shopify Website":
+        services_sum = sum([
+        numerical_values.get("Dev-Price", 0),
+        numerical_values.get("Design-Price", 0),
+        numerical_values.get("Testing-Price", 0),
+        numerical_values.get("AM-Price", 0)
+    ])
+    elif selected_proposal == "Single Vendor Ecommerce Website":
+        services_sum = sum([
+        numerical_values.get("Dev-Price", 0),
+        numerical_values.get("Design-Price", 0),
+        numerical_values.get("WB-Price", 0),
+        numerical_values.get("TD-Price", 0),
+        numerical_values.get("AM-Price", 0)
+    ])
+    elif selected_proposal == "Web Based AI Fintech Proposal":
+        services_sum = sum([
+        numerical_values.get("Dev-Price", 0),
+        numerical_values.get("Design-Price", 0),
+        numerical_values.get("AIML-Price", 0),
+        numerical_values.get("AM-Price", 0)
+    ])
+
+    
 
     # Annual Maintenance (10% of Total Amount)
     am_price = int(services_sum * 0.10)
@@ -423,20 +559,17 @@ def generate_document():
         team_data = get_general_team_details()
 
     # Add Additional Tools Section
-    st.subheader("Add Additional Tools")
-    additional_tool_1 = st.text_input("Tool 1:")
-    additional_tool_2 = st.text_input("Tool 2:")
-
     additional_tools_data = {}
-    if additional_tool_1:
-        additional_tools_data["<<T1>>"] = additional_tool_1
+    if not is_matrix_2x2:
+        st.subheader("Add Additional Tools")
+        additional_tool_1 = st.text_input("Tool 1:")
+        additional_tool_2 = st.text_input("Tool 2:")
+        
+        additional_tools_data["<<T1>>"] = additional_tool_1 if additional_tool_1 else ""
+        additional_tools_data["<<T2>>"] = additional_tool_2 if additional_tool_2 else ""
     else:
         additional_tools_data["<<T1>>"] = ""
-
-    if additional_tool_2:
-        additional_tools_data["<<T2>>"] = additional_tool_2
-    else:
-        additional_tools_data["<<T2>>"] = ""
+        additional_tools_data["<<T2>>"] = ""   
 
     # Combine all placeholders
     placeholders = {
