@@ -1,34 +1,23 @@
-# Use official Python runtime as a parent image
-FROM python:3.9-slim
+# Dockerfile
+FROM python:3.10-slim
 
-# Set environment variables
-ENV PYTHONDONTWRITEBYTECODE 1
-ENV PYTHONUNBUFFERED 1
-
-# Set work directory
+# Set working directory
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    libpq-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-# Copy requirements file first to leverage Docker cache
+# Copy requirements and install
 COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Install Python dependencies
-RUN pip install --upgrade pip && \
-    pip install -r requirements.txt
-
-# Copy project files
+# Copy all files
 COPY . .
 
-# Collect static files (if needed for Django)
-RUN python manage.py collectstatic --noinput
+# Streamlit-specific: disable sharing and telemetry
+ENV STREAMLIT_SERVER_ENABLE_CORS=false
+ENV STREAMLIT_SERVER_HEADLESS=true
+ENV STREAMLIT_SERVER_PORT=8080
 
-# Expose the port the app runs on
-EXPOSE 8000
+# Expose the port Streamlit will run on
+EXPOSE 8080
 
-# Command to run the application
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "AS_Proposal_Generator.wsgi:application"]
+# Start the app
+CMD ["streamlit", "run", "app.py"]
